@@ -1,6 +1,9 @@
 from setuptools import setup
 import versioneer
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 requirements = [
     "intake",
     "pandas",
@@ -12,6 +15,8 @@ setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description="Metabase driver for Intake",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     license="BSD",
     author="Albert DeFusco",
     author_email='adefusco@anaconda.com',
