@@ -1,0 +1,2 @@
+intake_metabase/_version.py export-subst
+* text=auto eol=lf

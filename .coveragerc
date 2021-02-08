@@ -1,0 +1,7 @@
+[report]
+omit =
+    setup.py
+    intake_metabase/__main__.py
+    intake_metabase/_version.py
+    versioneer.py
+    tests/*
