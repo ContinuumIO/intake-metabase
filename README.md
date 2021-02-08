@@ -2,6 +2,15 @@
 
 Intake driver to load [Metabase tables](https://www.metabase.com/)
 
+## Install
+
+To install using Conda run
+
+```
+conda install -c defusco intake-metabase
+```
+
+
 ## Quickstart
 
 To load a table as a Pandas DataFrames you will need to know the following information
