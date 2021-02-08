@@ -23,7 +23,10 @@ setup(
     url='https://github.com/ContinuumIO/intake-metabase',
     packages=['intake_metabase'],
     entry_points={
-        'intake.drivers': ['metabase_table = intake_metabase.source:MetabaseDatasetSource']
+        'intake.drivers': [
+            'metabase_catalog = intake_metabase.source:MetabaseCatalog',
+            'metabase_table = intake_metabase.source:MetabaseTableSource',
+            ]
     },
     install_requires=requirements,
     keywords='intake-metabase',

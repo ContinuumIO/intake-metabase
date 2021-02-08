@@ -12,7 +12,35 @@ conda install -c defusco intake-metabase
 
 
 ## Quickstart
+To access a catalog of tables in Metabase you will need the following information
 
+* `domain`: The URL where Metabase is running
+* `username`: Your username, typically an email address
+* `password`: Your password (Google Auth is not yet supported)
+
+To load the catalog and list the tables
+
+```python
+import intake
+catalog = intake.open_metabase_catalog(domain, username, password)
+list(catalog)
+```
+
+This will produce output like
+
+```
+[table1, table2, table3]
+```
+
+To load a table as a Pandas DataFrame
+
+```
+df = catalog.<table>.read()    
+```
+
+Replace `<table>` with the name of the table from the list.
+
+## Load a single table
 To load a table as a Pandas DataFrames you will need to know the following information
 
 * `domain`: The URL where Metabase is running
