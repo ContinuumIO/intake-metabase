@@ -30,8 +30,9 @@ class MetabaseCatalog(Catalog):
         self._entries = {}
         for db in databases:
             for table in db['tables']:
+                table_name = f"{db['name']}.{table['name']}"
                 e = LocalCatalogEntry(
-                    name=table['name'],
+                    name=table_name,
                     description=table['description'],
                     driver=MetabaseTableSource,
                     catalog=self,
@@ -44,8 +45,7 @@ class MetabaseCatalog(Catalog):
                     }
                 )
                 e._plugin = [MetabaseTableSource]
-                # self._entries[db['name']][table['name']] = e
-                self._entries[table['name']] = e
+                self._entries[table_name] = e
 
 
 class MetabaseTableSource(DataSource):
