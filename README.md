@@ -29,16 +29,18 @@ list(catalog)
 This will produce output like
 
 ```
-[table1, table2, table3]
+['first-db.table_a', 'first-db.table_b', 'questions.3']
 ```
 
 To load a table as a Pandas DataFrame
 
 ```
-df = catalog.<table>.read()    
+df = catalog['<table>'].read()    
 ```
 
 Replace `<table>` with the name of the table from the list.
+
+This driver supports multiple databases and saved questions.
 
 ## Load a single table
 To load a table as a Pandas DataFrames you will need to know the following information
@@ -66,12 +68,40 @@ ds = intake.open_metabase_table(domain, username, password,
                                 database, table)
 df = ds.read()
 ```
+## Load a single question
+
+To load a table as a Pandas DataFrames you will need to know the following information
+
+* `domain`: The URL where Metabase is running
+* `username`: Your username, typically an email address
+* `password`: Your password (Google Auth is not yet supported)
+* `question`: The numeric id of the question
+
+You can generally determine the numeric id of the question you are interested in by
+
+1. Visit `<domain>/collection/root?type=card`
+1. Click on the question
+    * You'll see in the url the question id `<domain>/question/<question_id>`
+
+```python
+import intake
+ds = intake.open_metabase_question(domain, username, password,
+                                   question)
+df = ds.read()
+```
+
 
 ## Constructing catalogs
+This repository provides three drivers
+
+* `metabase_catalog`: Catalog entry to retrieve all tables and questions
+* `metabase_table`: Catalog entry for a single table in a database
+* `metabase_question`: Catalog entry for a single saved question
 
 To build a catalog containing a Metabase table it can be useful to use the 
 [Catalog Templating](https://intake.readthedocs.io/en/latest/catalog.html#templating) features
-to avoid writing usernames and passwords into the catalog
+to avoid writing usernames and passwords into the catalog. For example this catalog
+provides a single table.
 
 ```yaml
 metadata:
