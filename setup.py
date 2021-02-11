@@ -26,7 +26,8 @@ setup(
         'intake.drivers': [
             'metabase_catalog = intake_metabase.source:MetabaseCatalog',
             'metabase_table = intake_metabase.source:MetabaseTableSource',
-            ]
+            'metabase_question = intake_metabase.source:MetabaseQuestionSource'
+        ]
     },
     install_requires=requirements,
     keywords='intake-metabase',

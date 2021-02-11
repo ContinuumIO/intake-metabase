@@ -29,23 +29,85 @@ class MetabaseCatalog(Catalog):
 
         self._entries = {}
         for db in databases:
-            for table in db['tables']:
-                table_name = f"{db['name']}.{table['name']}"
-                e = LocalCatalogEntry(
-                    name=table_name,
-                    description=table['description'],
-                    driver=MetabaseTableSource,
-                    catalog=self,
-                    args={
-                        'domain': self.domain,
-                        'username': self.username,
-                        'password': self.password,
-                        'database': db['id'],
-                        'table': table['id']
-                    }
-                )
-                e._plugin = [MetabaseTableSource]
-                self._entries[table_name] = e
+            if db.get('is_saved_questions', False):
+                for card in db['tables']:
+                    question = card['id'].split('__')[-1]
+                    question_name = f"questions.{question}"
+                    description = card['display_name'] if card['description'] is None else card['description']
+                    e = LocalCatalogEntry(
+                        name=question_name,
+                        description=description,
+                        driver=MetabaseQuestionSource,
+                        catalog=self,
+                        args={
+                            'domain': self.domain,
+                            'username': self.username,
+                            'password': self.password,
+                            'question': question
+                        }
+                    )
+                    e._plugin = [MetabaseQuestionSource]
+                    self._entries[question_name] = e
+            else:
+                for table in db['tables']:
+                    table_name = f"{db['name']}.{table['name']}"
+                    e = LocalCatalogEntry(
+                        name=table_name,
+                        description=table['description'],
+                        driver=MetabaseTableSource,
+                        catalog=self,
+                        args={
+                            'domain': self.domain,
+                            'username': self.username,
+                            'password': self.password,
+                            'database': db['id'],
+                            'table': table['id']
+                        }
+                    )
+                    e._plugin = [MetabaseTableSource]
+                    self._entries[table_name] = e
+
+
+class MetabaseQuestionSource(DataSource):
+    name = 'metabase_question'
+    container = 'dataframe'
+    version = __version__
+    partition_access = True
+
+    def __init__(self, domain, username, password, question, metadata=None):
+        self.domain = domain
+        self.username = username
+        self.password = password
+        self.question = question
+        self._df = None
+
+        self._metabase = MetabaseAPI(self.domain, self.username, self.password)
+
+        super(MetabaseQuestionSource, self).__init__(metadata=metadata)
+
+    def _get_schema(self):
+        if self._df is None:
+            self._df = self._metabase.get_card(self.question)
+
+        return Schema(datashape=None,
+                      dtype=self._df.dtypes,
+                      shape=(None, len(self._df.columns)),
+                      npartitions=1,
+                      extra_metadata={})
+
+    def _get_partition(self, i):
+        self._get_schema()
+        return self._df
+
+    def read(self):
+        self._get_schema()
+        return self._df
+
+    def to_dask(self):
+        raise NotImplementedError()
+
+    def _close(self):
+        self._dataframe = None
 
 
 class MetabaseTableSource(DataSource):
@@ -54,7 +116,7 @@ class MetabaseTableSource(DataSource):
     version = __version__
     partition_access = True
 
-    def __init__(self, domain, username, password, database, table, *kwargs, metadata=None):
+    def __init__(self, domain, username, password, database, table, metadata=None):
         self.domain = domain
         self.username = username
         self.password = password
@@ -71,7 +133,7 @@ class MetabaseTableSource(DataSource):
             self._df = self._metabase.get_table(self.database, self.table)
 
         return Schema(datashape=None,
-                      dtype=self._df,
+                      dtype=self._df.dtypes,
                       shape=(None, len(self._df.columns)),
                       npartitions=1,
                       extra_metadata={})
@@ -122,7 +184,7 @@ class MetabaseAPI():
         headers = {
             'X-Metabase-Session': self._token
         }
-        params = {'include': 'tables'}
+        params = {'include': 'tables', 'saved': True}
 
         res = requests.get(
             urljoin(self.domain, '/api/database'),
@@ -145,6 +207,32 @@ class MetabaseAPI():
 
         return res.json()
 
+    def get_card(self, question):
+        from io import StringIO
+
+        import pandas as pd
+
+        self._create_or_refresh_token()
+
+        card_metadata = self.get_metadata(f'card__{question}')
+        date_fields = [f['display_name'] for f in card_metadata['fields']
+                       if 'date' in f['base_type'].lower()]
+
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Metabase-Session': self._token
+        }
+
+        res = requests.post(
+            urljoin(self.domain, f'/api/card/{question}/query/csv'),
+            headers=headers
+        )
+
+        res.raise_for_status()
+        csv = res.text
+
+        return pd.read_csv(StringIO(csv), parse_dates=date_fields, infer_datetime_format=True)
+        
     def get_table(self, database, table):
         from io import StringIO
 
