@@ -231,8 +231,9 @@ class MetabaseAPI():
         res.raise_for_status()
         csv = res.text
 
-        return pd.read_csv(StringIO(csv), parse_dates=date_fields, infer_datetime_format=True)
-        
+        return pd.read_csv(StringIO(csv.encode(res.encoding).decode('utf-8')),
+                           parse_dates=date_fields, infer_datetime_format=True)
+
     def get_table(self, database, table):
         from io import StringIO
 
@@ -248,10 +249,6 @@ class MetabaseAPI():
             "database": database,
             "query": {"source-table": table},
             "type": "query",
-            "middleware": {
-                "js-int-to-string?": True,
-                "add-default-userland-constraints?": True
-            }
         }
 
         headers = {
@@ -268,4 +265,5 @@ class MetabaseAPI():
         res.raise_for_status()
         csv = res.text
 
-        return pd.read_csv(StringIO(csv), parse_dates=date_fields, infer_datetime_format=True)
+        return pd.read_csv(StringIO(csv.encode(res.encoding).decode('utf-8')),
+                           parse_dates=date_fields, infer_datetime_format=True)
