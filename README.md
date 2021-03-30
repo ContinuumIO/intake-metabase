@@ -23,7 +23,15 @@ To load the catalog and list the tables
 
 ```python
 import intake
-catalog = intake.open_metabase_catalog(domain, username, password)
+catalog = intake.open_metabase_catalog(domain, username=username, password=password)
+list(catalog)
+```
+
+or using a session token
+
+```python
+import intake
+catalog = intake.open_metabase_catalog(domain, token=token)
 list(catalog)
 ```
 
@@ -66,8 +74,15 @@ Once you have all of the above information you can load a table as follows
 
 ```python
 import intake
-ds = intake.open_metabase_table(domain, username, password,
-                                database, table)
+ds = intake.open_metabase_table(domain, database, table, username=username, password=password)
+df = ds.read()
+```
+
+or with a session token
+
+```python
+import intake
+ds = intake.open_metabase_table(domain, database, table, token=token)
 df = ds.read()
 ```
 ## Load a single question
@@ -88,8 +103,15 @@ You can generally determine the numeric id of the question you are interested in
 
 ```python
 import intake
-ds = intake.open_metabase_question(domain, username, password,
-                                   question)
+ds = intake.open_metabase_question(domain, question, username=username, password=password)
+df = ds.read()
+```
+
+or with a session token
+
+```python
+import intake
+ds = intake.open_metabase_question(domain, question, token=token)
 df = ds.read()
 ```
 
