@@ -15,8 +15,9 @@ conda install -c defusco intake-metabase
 To access a catalog of tables in Metabase you will need the following information
 
 * `domain`: The URL where Metabase is running
-* `username`: Your username, typically an email address
-* `password`: Your password (Google Auth is not yet supported)
+* `username`: Your username, typically an email address [Optional]
+* `password`: Your password (Google Auth is not yet supported) [Optional]
+* `token`: Your session token (this will take precedence over username/password) [Optional]
 
 To load the catalog and list the tables
 
@@ -46,10 +47,11 @@ This driver supports multiple databases and saved questions.
 To load a table as a Pandas DataFrames you will need to know the following information
 
 * `domain`: The URL where Metabase is running
-* `username`: Your username, typically an email address
-* `password`: Your password (Google Auth is not yet supported)
 * `database`: The numeric id of the database where the table is stored
 * `table`: The numeric id of the table to load
+* `username`: Your username, typically an email address [Optional]
+* `password`: Your password (Google Auth is not yet supported) [Optional]
+* `token`: Your session token (this will take precedence over username/password) [Optional]
 
 You can generally determine the numeric ids of the database and table from the URL when you are viewing the table in your browser. Here are the steps.
 
@@ -73,9 +75,10 @@ df = ds.read()
 To load a table as a Pandas DataFrames you will need to know the following information
 
 * `domain`: The URL where Metabase is running
-* `username`: Your username, typically an email address
-* `password`: Your password (Google Auth is not yet supported)
 * `question`: The numeric id of the question
+* `username`: Your username, typically an email address [Optional]
+* `password`: Your password (Google Auth is not yet supported) [Optional]
+* `token`: Your session token (this will take precedence over username/password) [Optional]
 
 You can generally determine the numeric id of the question you are interested in by
 
@@ -115,6 +118,23 @@ sources:
       domain: <domain>
       username: 'env("METABASE_USERNAME")'
       password: 'env("METABASE_PASSWORD")'
+      database: 2
+      table: 6
+```
+
+or by using a session token
+
+```yaml
+metadata:
+  version: 1
+
+sources:
+  my_table:
+    description: My table
+    driver: metabase_table
+    args:
+      domain: <domain>
+      token: 'env("METABASE_TOKEN")'
       database: 2
       table: 6
 ```
