@@ -154,16 +154,23 @@ class MetabaseTableSource(DataSource):
 
 
 class MetabaseAPI():
-    def __init__(self, domain, username, password):
+    def __init__(self, domain, username=None, password=None, token=None):
         self.domain = domain
+
         self.password = password
         self.username = username
-        self._token = None
-        self._token_expiration = datetime.now()
+
+        if token is not None:
+            self._token = token
+            self._token_expiration = None
+        else:
+            self._token = None
+            self._token_expiration = datetime.now()
 
     def _create_or_refresh_token(self):
-        if self._token and (datetime.now() < self._token_expiration):
-            return
+        if self._token:
+            if (self._token_expiration is None) or (datetime.now() < self._token_expiration):
+                return
 
         res = requests.post(
             urljoin(self.domain, '/api/session'),
