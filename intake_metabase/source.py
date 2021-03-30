@@ -15,12 +15,13 @@ class MetabaseCatalog(Catalog):
     version = __version__
     # partition_access = False
 
-    def __init__(self, domain, username, password, metadata=None):
+    def __init__(self, domain, username=None, password=None, token=None, metadata=None):
         self.domain = domain
         self.username = username
         self.password = password
+        self.token = token
 
-        self._metabase = MetabaseAPI(self.domain, self.username, self.password)
+        self._metabase = MetabaseAPI(self.domain, self.username, self.password, self.token)
 
         super().__init__(name='metabase', metadata=metadata)
 
@@ -43,6 +44,7 @@ class MetabaseCatalog(Catalog):
                             'domain': self.domain,
                             'username': self.username,
                             'password': self.password,
+                            'token': self.token,
                             'question': question
                         }
                     )
@@ -60,6 +62,7 @@ class MetabaseCatalog(Catalog):
                             'domain': self.domain,
                             'username': self.username,
                             'password': self.password,
+                            'token': self.token,
                             'database': db['id'],
                             'table': table['id']
                         }
@@ -74,14 +77,15 @@ class MetabaseQuestionSource(DataSource):
     version = __version__
     partition_access = True
 
-    def __init__(self, domain, username, password, question, metadata=None):
+    def __init__(self, domain, question, username=None, password=None, token=None, metadata=None):
         self.domain = domain
         self.username = username
         self.password = password
+        self.token = token
         self.question = question
         self._df = None
 
-        self._metabase = MetabaseAPI(self.domain, self.username, self.password)
+        self._metabase = MetabaseAPI(self.domain, self.username, self.password, self.token)
 
         super(MetabaseQuestionSource, self).__init__(metadata=metadata)
 
@@ -116,15 +120,16 @@ class MetabaseTableSource(DataSource):
     version = __version__
     partition_access = True
 
-    def __init__(self, domain, username, password, database, table, metadata=None):
+    def __init__(self, domain, database, table, username=None, password=None, token=None, metadata=None):
         self.domain = domain
         self.username = username
         self.password = password
         self.database = database
+        self.token = token
         self.table = table
         self._df = None
 
-        self._metabase = MetabaseAPI(self.domain, self.username, self.password)
+        self._metabase = MetabaseAPI(self.domain, self.username, self.password, self.token)
 
         super(MetabaseTableSource, self).__init__(metadata=metadata)
 
