@@ -203,7 +203,7 @@ class MetabaseAPI():
             headers=headers, params=params
         )
 
-        return res.json()
+        return res.json()['data']
 
     def get_metadata(self, table):
         self._create_or_refresh_token()
