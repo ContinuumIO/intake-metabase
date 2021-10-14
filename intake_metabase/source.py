@@ -120,13 +120,14 @@ class MetabaseTableSource(DataSource):
     version = __version__
     partition_access = True
 
-    def __init__(self, domain, database, table, username=None, password=None, token=None, metadata=None):
+    def __init__(self, domain, database, table=None, query=None, username=None, password=None, token=None, metadata=None):
         self.domain = domain
         self.username = username
         self.password = password
         self.database = database
         self.token = token
         self.table = table
+        self.query = query
         self._df = None
 
         self._metabase = MetabaseAPI(self.domain, self.username, self.password, self.token)
@@ -135,7 +136,7 @@ class MetabaseTableSource(DataSource):
 
     def _get_schema(self):
         if self._df is None:
-            self._df = self._metabase.get_table(self.database, self.table)
+            self._df = self._metabase.get_table(self.database, self.table, self.query)
 
         return Schema(datashape=None,
                       dtype=self._df.dtypes,
@@ -246,22 +247,37 @@ class MetabaseAPI():
         return pd.read_csv(StringIO(csv.encode(res.encoding).decode('utf-8')),
                            parse_dates=date_fields, infer_datetime_format=True)
 
-    def get_table(self, database, table):
+    def get_table(self, database, table=None, query=None):
         from io import StringIO
 
         import pandas as pd
 
         self._create_or_refresh_token()
 
-        table_metadata = self.get_metadata(table)
-        date_fields = [f['display_name'] for f in table_metadata['fields']
-                       if 'date' in f['base_type'].lower()]
+        if (table is not None) and (query is not None):
+            raise ValueError('Please set only one of table or query')
+
+        kwargs = {}
+        if table is not None:
+            table_metadata = self.get_metadata(table)
+            key = 'name' if query is not None else 'display_name'
+            date_fields = [f[key] for f in table_metadata['fields']
+                           if 'date' in f['base_type'].lower()]
+            kwargs = {
+                'parse_dates': date_fields,
+                'infer_datetime_format': True
+            }
 
         body = {
             "database": database,
-            "query": {"source-table": table},
-            "type": "query",
         }
+
+        if query is None:
+            body['type'] = 'query'
+            body['query'] = {'source-table': table}
+        else:
+            body['type'] = 'native'
+            body['native'] = {'query': query}
 
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -278,4 +294,4 @@ class MetabaseAPI():
         csv = res.text
 
         return pd.read_csv(StringIO(csv.encode(res.encoding).decode('utf-8')),
-                           parse_dates=date_fields, infer_datetime_format=True)
+                           **kwargs)
