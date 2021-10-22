@@ -15,7 +15,8 @@ class MetabaseCatalog(Catalog):
     version = __version__
     # partition_access = False
 
-    def __init__(self, domain, username=None, password=None, token=None, metadata=None):
+    def __init__(self, domain, username=None, password=None, token=None, metadata=None, name=None):
+        self.name = name
         self.domain = domain
         self.username = username
         self.password = password
