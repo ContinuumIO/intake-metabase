@@ -95,7 +95,7 @@ class MetabaseQuestionSource(DataSource):
             self._df = self._metabase.get_card(self.question)
 
         return Schema(datashape=None,
-                      dtype=self._df.dtypes,
+                      dtype={n: str(t) for (n, t) in self._df.dtypes.items()},
                       shape=(None, len(self._df.columns)),
                       npartitions=1,
                       extra_metadata={})
@@ -112,7 +112,7 @@ class MetabaseQuestionSource(DataSource):
         raise NotImplementedError()
 
     def _close(self):
-        self._dataframe = None
+        self._df = None
 
 
 class MetabaseTableSource(DataSource):
@@ -140,7 +140,7 @@ class MetabaseTableSource(DataSource):
             self._df = self._metabase.get_table(self.database, self.table, self.query)
 
         return Schema(datashape=None,
-                      dtype=self._df.dtypes,
+                      dtype={n: str(t) for (n, t) in self._df.dtypes.items()},
                       shape=(None, len(self._df.columns)),
                       npartitions=1,
                       extra_metadata={})
@@ -157,7 +157,7 @@ class MetabaseTableSource(DataSource):
         raise NotImplementedError()
 
     def _close(self):
-        self._dataframe = None
+        self._df = None
 
 
 class MetabaseAPI():
