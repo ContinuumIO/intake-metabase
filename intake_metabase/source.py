@@ -54,7 +54,8 @@ class MetabaseCatalog(Catalog):
                             'username': self.username,
                             'password': self.password,
                             'token': self.token,
-                            'question': question
+                            'question': question,
+                            'extra_headers': self.extra_headers
                         }
                     )
                     e._plugin = [MetabaseQuestionSource]
@@ -73,7 +74,8 @@ class MetabaseCatalog(Catalog):
                             'password': self.password,
                             'token': self.token,
                             'database': db['id'],
-                            'table': table['id']
+                            'table': table['id'],
+                            'extra_headers': self.extra_headers
                         }
                     )
                     e._plugin = [MetabaseTableSource]
