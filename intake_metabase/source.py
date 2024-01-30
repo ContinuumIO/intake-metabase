@@ -214,7 +214,7 @@ class MetabaseAPI():
         self._create_or_refresh_token()
 
         headers = _merge_dicts({'X-Metabase-Session': self._token}, self.extra_headers)
-        params = json.dumps({'include': 'tables', 'saved': True})
+        params = {'include': 'tables', 'saved': 'true'}
 
         res = requests.get(
             urljoin(self.domain, '/api/database'),
